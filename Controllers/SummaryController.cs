@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Excavator.Models.Mongo;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -6,10 +7,13 @@ using System.Net.Http;
 using System.Web.Http;
 
 namespace Excavator.Controllers {
-  public class ValuesController : ApiController {
-    // GET api/values
-    public IEnumerable<string> Get() {
-      return new string[] { "value1", "value2" };
+  public class SummaryController : ApiController {
+    private MongoSearchContext ctx = new MongoSearchContext();
+
+    public IHttpActionResult Get() {
+      var domains = ctx.Domains.OrderBy(x => x.Name);
+      
+      return Ok(domains);
     }
 
     // GET api/values/5
