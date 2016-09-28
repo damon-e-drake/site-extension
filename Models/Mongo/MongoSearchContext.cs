@@ -5,6 +5,9 @@ using System.Linq;
 using System.Web;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 
 namespace Excavator.Models.Mongo {
   public class MongoSearchContext : MongoDBContext {
@@ -23,14 +26,15 @@ namespace Excavator.Models.Mongo {
     public string Name { get; set; }
     [BsonElement("documents")]
     public int Documents { get; set; }
+    [BsonIgnoreIfNull, BsonElement("robotsText")]
+    public RobotsText RobotTexts { get; set; }
   }
-
   public class RobotsText {
     private static string[] Rules = new[] { "crawl-delay", "allow", "disallow", "noindex", "sitemap" };
 
     [BsonElement("file")]
     public string File { get; private set; }
-    [BsonElement("file")]
+    [BsonElement("lastUpdated")]
     public DateTime LastUpdated { get; set; }
     [BsonIgnoreIfNull, BsonElement("userAgents")]
     public IList<RobotUserAgent> UserAgents { get; set; }
@@ -39,40 +43,46 @@ namespace Excavator.Models.Mongo {
 
     public static RobotsText ProcessRobotFile(string url) {
       var contents = string.Empty;
+      var bot = new RobotsText();
+
+      var baseUri = new Uri(url);
 
       using (var client = new HttpClient()) {
         client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Excavationbot", "1.0"));
         try {
-          var text = client.GetAsync(BaseUri).Result;
+          var file = string.Format("{0}://{1}/robots.txt", baseUri.Scheme, baseUri.Host);
+          var text = client.GetAsync(file).Result;
+          bot.File = file;
 
           if (text.IsSuccessStatusCode) { contents = text.Content.ReadAsStringAsync().Result; }
         }
         catch {
-
+          return null;
         }
+
+        var table = ParseBotFile(contents);
+        if (table == null) { return null; }
+
+        var userAgents = new List<RobotUserAgent>();
+        var agents = table.Where(x => x.Name != null).Select(x => x.Name).Distinct();
+        foreach (var agent in agents) {
+          var a = new RobotUserAgent() {
+            Name = agent,
+            Allows = table.Where(x => x.Name == agent && x.Rule == "allow").Select(f => f.Path).ToList(),
+            Disallows = table.Where(x => x.Name == agent && x.Rule == "disallow").Select(f => f.Path).ToList(),
+            NoIndexes = table.Where(x => x.Name == agent && x.Rule == "noindex").Select(f => f.Path).ToList()
+          };
+
+          var delay = table.FirstOrDefault(x => x.Name == agent && x.Rule == "crawl-delay");
+          if (delay != null) { a.CrawlDelay = int.Parse(delay.Path); }
+
+          userAgents.Add(a);
+        }
+
+        bot.UserAgents = userAgents;
+        bot.SiteMaps = table.Where(x => x.Rule == "sitemap").Select(x => x.Path).ToList();
+        return bot;
       }
-
-      var table = ParseBotFile(contents);
-      if (table == null) { return; }
-
-      var userAgents = new List<RobotUserAgent>();
-      var agents = table.Where(x => x.Name != null).Select(x => x.Name).Distinct();
-      foreach (var agent in agents) {
-        var a = new RobotUserAgent() {
-          Name = agent,
-          Allows = table.Where(x => x.Name == agent && x.Rule == "allow").Select(f => f.Path),
-          Disallows = table.Where(x => x.Name == agent && x.Rule == "disallow").Select(f => f.Path),
-          NoIndexes = table.Where(x => x.Name == agent && x.Rule == "noindex").Select(f => f.Path)
-        };
-
-        var delay = table.FirstOrDefault(x => x.Name == agent && x.Rule == "crawl-delay");
-        if (delay != null) { a.CrawlDelay = int.Parse(delay.Path); }
-
-        userAgents.Add(a);
-      }
-
-      UserAgents = userAgents;
-      SiteMaps = table.Where(x => x.Rule == "sitemap").Select(x => x.Path).ToList();
     }
 
     public bool CanIndex(Uri uri) {
@@ -128,11 +138,16 @@ namespace Excavator.Models.Mongo {
   }
 
   public class RobotUserAgent {
+    [BsonElement("name")]
     public string Name { get; set; }
+    [BsonIgnoreIfNull, BsonElement("crawlDelay")]
     public int CrawlDelay { get; set; }
-    public IEnumerable<string> Allows { get; set; }
-    public IEnumerable<string> Disallows { get; set; }
-    public IEnumerable<string> NoIndexes { get; set; }
+    [BsonIgnoreIfNull, BsonElement("allows")]
+    public IList<string> Allows { get; set; }
+    [BsonIgnoreIfNull, BsonElement("disallows")]
+    public IList<string> Disallows { get; set; }
+    [BsonIgnoreIfNull, BsonElement("noindexes")]
+    public IList<string> NoIndexes { get; set; }
 
     public RobotUserAgent() {
       Allows = new List<string>();

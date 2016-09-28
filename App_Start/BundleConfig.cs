@@ -9,7 +9,7 @@ namespace Excavator {
       bundles.Add(new ScriptBundle("~/bundles/ko-models").Include("~/Scripts/ko-models/*.js"));
       // Add bundle for Knockout Models
 
-      bundles.Add(new StyleBundle("~/Content/css").Include("~/Content/bootstrap.css","~/Content/site.css"));
+      bundles.Add(new StyleBundle("~/Content/css").Include("~/Content/bootstrap.css","~/Content/font-awesome.css", "~/Content/site.css"));
     }
   }
 }
