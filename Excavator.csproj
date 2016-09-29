@@ -189,6 +189,7 @@
     </Compile>
     <Compile Include="Models\Mongo\MongoSearchContext.cs" />
     <Compile Include="Models\SearchEngine\RobotsText.cs" />
+    <Compile Include="Models\SearchEngine\WebCrawler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

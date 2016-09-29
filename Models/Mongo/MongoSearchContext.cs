@@ -22,6 +22,8 @@ namespace Excavator.Models.Mongo {
   public class Domain {
     [BsonId]
     public BsonObjectId ID { get; set; }
+    [BsonElement("enabled")]
+    public bool Enabled { get; set; }
     [BsonIgnoreIfNull, BsonElement("name")]
     public string Name { get; set; }
     [BsonElement("documents")]
@@ -53,7 +55,7 @@ namespace Excavator.Models.Mongo {
           var file = string.Format("{0}://{1}/robots.txt", baseUri.Scheme, baseUri.Host);
           var text = client.GetAsync(file).Result;
           bot.File = file;
-
+          bot.LastUpdated = DateTime.Now;
           if (text.IsSuccessStatusCode) { contents = text.Content.ReadAsStringAsync().Result; }
         }
         catch {
@@ -83,16 +85,6 @@ namespace Excavator.Models.Mongo {
         bot.SiteMaps = table.Where(x => x.Rule == "sitemap").Select(x => x.Path).ToList();
         return bot;
       }
-    }
-
-    public bool CanIndex(Uri uri) {
-      var agent = UserAgents.FirstOrDefault(x => x.Name == "*");
-      if (agent == null) { return false; }
-
-      var path = uri.AbsolutePath.ToString();
-      if (agent.Disallows.Any(x => path.StartsWith(x)) || agent.NoIndexes.Any(x => path.StartsWith(x))) { return false; }
-
-      return true;
     }
 
     public override string ToString() {
@@ -136,7 +128,6 @@ namespace Excavator.Models.Mongo {
       return table;
     }
   }
-
   public class RobotUserAgent {
     [BsonElement("name")]
     public string Name { get; set; }
@@ -154,6 +145,13 @@ namespace Excavator.Models.Mongo {
       Disallows = new List<string>();
       NoIndexes = new List<string>();
     }
+
+    public bool CanIndex(Uri uri) {
+      var path = uri.AbsolutePath.ToString();
+      if (Disallows.Any(x => path.StartsWith(x)) || NoIndexes.Any(x => path.StartsWith(x))) { return false; }
+
+      return true;
+    }
   }
 
   public class UserAgentTable {
@@ -166,9 +164,22 @@ namespace Excavator.Models.Mongo {
   public class Document {
     [BsonId]
     public BsonObjectId ID { get; set; }
-    [BsonIgnoreIfNull, BsonElement("domain")]
-    public string Domain { get; set; }
+    [BsonIgnoreIfNull, BsonElement("host")]
+    public string Host { get; set; }
     [BsonElement("url")]
     public string Url { get; set; }
+    [BsonElement("indexed")]
+    public bool Indexed { get; set; }
+    [BsonElement("mimeType")]
+    public string MimeType { get; set; }
+    [BsonElement("lastIndexed")]
+    public DateTime? LastIndexed { get; set; }
+    public IList<string> Links { get; set; }
+    [BsonIgnoreIfNull, BsonElement("statusCode")]
+    public int? StatusCode { get; set; }
+
+    public Document() {
+      Links = new List<string>();
+    }
   }
 }
