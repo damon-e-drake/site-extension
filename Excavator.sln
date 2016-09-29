@@ -3,7 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Excavator", "Excavator.csproj", "{E7DCC4DD-5FD5-45CE-A476-AD80831B6524}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Excavator.Web", "web-apps\Excavator.Web\Excavator.Web.csproj", "{E7DCC4DD-5FD5-45CE-A476-AD80831B6524}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Excavator.Service", "services\Excavator.Service\Excavator.Service.csproj", "{5EC63EF8-4B21-4FD1-9095-285A3CEB3C58}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web Apps", "Web Apps", "{5A49D22B-6C46-48AE-B581-84F36E479053}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libaries", "Libaries", "{02CB0444-C1FB-41EF-9225-305570B5CCFA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{3A0BB2F4-D0DF-4750-B36E-2E6868886AA7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,8 +23,16 @@ Global
 		{E7DCC4DD-5FD5-45CE-A476-AD80831B6524}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E7DCC4DD-5FD5-45CE-A476-AD80831B6524}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E7DCC4DD-5FD5-45CE-A476-AD80831B6524}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5EC63EF8-4B21-4FD1-9095-285A3CEB3C58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5EC63EF8-4B21-4FD1-9095-285A3CEB3C58}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5EC63EF8-4B21-4FD1-9095-285A3CEB3C58}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5EC63EF8-4B21-4FD1-9095-285A3CEB3C58}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E7DCC4DD-5FD5-45CE-A476-AD80831B6524} = {5A49D22B-6C46-48AE-B581-84F36E479053}
+		{5EC63EF8-4B21-4FD1-9095-285A3CEB3C58} = {3A0BB2F4-D0DF-4750-B36E-2E6868886AA7}
 	EndGlobalSection
 EndGlobal
